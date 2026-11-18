@@ -8,6 +8,7 @@ https://www.fordham.edu/student-life/department-of-transportation/ram-van-shuttl
 from collections import deque
 from math import ceil, cos, exp, pi, sin
 from random import Random
+import re
 from time import perf_counter
 import tkinter as tk
 from tkinter import font
@@ -41,6 +42,9 @@ PROMPTS = (
     "The campus tour guide said everything was a short walk. I assume the Ram Van was parked when they wrote that part.",
     "I booked a window seat in my imagination. The rest of the reservation may require slightly more effort.",
 )
+PROMPTS = tuple(sentence.strip() for passage in PROMPTS
+                for sentence in re.split(r"(?<=[.!?])\s+", passage)
+                if sentence.strip())
 
 
 class Chase:
@@ -296,11 +300,13 @@ class Game:
         chase = self.chase
         self.rect(0, 520, WIDTH, HEIGHT, color=INK)
         self.rect(0, 520, WIDTH, 523, color=RED if now < self.error_until else "#a34062")
-        self.text(26, 546, "TYPE THE PASSAGE", GOLD)
+        self.text(26, 546, f"SENTENCE {chase.round + 1}  /  TYPE TO RUN", GOLD)
         if now < self.error_until:
             self.text(974, 546, "Try the highlighted character", RED, anchor="e")
         else:
-            self.text(974, 546, "Match capitals and punctuation", MUTED, anchor="e")
+            next_char = chase.prompt[chase.index]
+            next_label = "SPACE" if next_char == " " else repr(next_char)
+            self.text(974, 546, f"NEXT KEY  {next_label}", MUTED, anchor="e")
         char_width = self.regular.measure("M")
         limit = int(948 / char_width)
         prompt = chase.prompt
